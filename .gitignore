@@ -2,6 +2,9 @@
 node_modules/
 cloudflared.exe
 .vercel/
+local-dev-server.js
+deploy-vercel.bat
+Press
 
 # Logs & OS artifacts
 *.log

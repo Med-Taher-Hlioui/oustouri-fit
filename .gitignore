@@ -1,0 +1,9 @@
+# Dependencies & Binaries
+node_modules/
+cloudflared.exe
+.vercel/
+
+# Logs & OS artifacts
+*.log
+.DS_Store
+Thumbs.db

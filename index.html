@@ -1,0 +1,319 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
+  <title>Oustouri Fit — Daily Workout Tracker</title>
+  
+  <!-- PWA & Mobile Meta Tags -->
+  <link rel="manifest" href="manifest.json" />
+  <meta name="theme-color" content="#0f172a" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+  <meta name="apple-mobile-web-app-title" content="Oustouri Fit" />
+  <link rel="apple-touch-icon" href="icons/icon-192.png" />
+  <link rel="icon" type="image/svg+xml" href="icons/icon.svg" />
+  <link rel="icon" type="image/png" sizes="192x192" href="icons/icon-192.png" />
+  
+  <!-- Google Fonts - Inter -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800;900&display=swap" rel="stylesheet" />
+  
+  <!-- Stylesheet -->
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <!-- Fullscreen Confetti Canvas for 100% completion celebration -->
+  <canvas id="confetti-canvas"></canvas>
+
+  <div class="app-viewport">
+    <!-- ====================================================================
+         STICKY HEADER & LIVE WORKOUT PROGRESS BAR
+         ==================================================================== -->
+    <header class="app-header">
+      <div class="header-top-row">
+        <div class="brand-wrapper">
+          <div class="brand-icon" aria-hidden="true">
+            <!-- Athletic Barbell Flame Emblem -->
+            <svg viewBox="0 0 24 24">
+              <path d="M6 5v14M18 5v14M2 9v6M22 9v6M6 12h12"></path>
+            </svg>
+          </div>
+          <div class="brand-text-block">
+            <h1 class="brand-title">OUSTOURI FIT</h1>
+            <span class="brand-subtitle">Pro Gym Workout Tracker</span>
+          </div>
+        </div>
+
+        <div class="header-actions">
+          <button id="add-exercise-modal-btn" class="primary-add-btn" title="Add Custom Exercise">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3">
+              <line x1="12" y1="5" x2="12" y2="19"></line>
+              <line x1="5" y1="12" x2="19" y2="12"></line>
+            </svg>
+            <span>Add</span>
+          </button>
+        </div>
+      </div>
+
+      <!-- Live Workout Progress Bar (0% to 100%) -->
+      <div class="progress-container">
+        <div class="progress-info-row">
+          <div class="progress-status-label">
+            <span class="progress-dot"></span>
+            <span id="progress-count">0 of 0 completed</span>
+          </div>
+          <span id="progress-percent" class="progress-percent-label">0%</span>
+        </div>
+        <div class="progress-track" role="progressbar" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100">
+          <div id="progress-fill" class="progress-fill"></div>
+        </div>
+      </div>
+    </header>
+
+    <!-- ====================================================================
+         WEEKLY HORIZONTAL SELECTOR (Mon - Sun)
+         ==================================================================== -->
+    <section class="week-selector-section" aria-label="Weekly Workout Schedule">
+      <div id="week-selector" class="week-scroll-container">
+        <!-- Rendered dynamically by app.js -->
+      </div>
+    </section>
+
+    <!-- ====================================================================
+         ACTIVE DAY TITLE & WORKOUT CONTROLS
+         ==================================================================== -->
+    <section class="active-day-banner">
+      <div class="active-day-meta">
+        <span id="active-day-tag" class="active-day-tag">
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor">
+            <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon>
+          </svg>
+          Tuesday Workout
+        </span>
+        <h2 id="active-day-title" class="active-day-title">LEG DAY OUSTOURI</h2>
+      </div>
+
+      <button id="reset-day-btn" class="reset-day-btn" title="Reset all checkmarks for this day">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+          <polyline points="23 4 23 10 17 10"></polyline>
+          <path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"></path>
+        </svg>
+        <span>Reset</span>
+      </button>
+    </section>
+
+    <!-- Celebration completion banner (shown on 100%) -->
+    <div id="celebration-banner" class="celebration-banner" style="display: none;">
+      <div class="celebration-content">
+        <span class="celebration-icon">⚡</span>
+        <div>
+          <div class="celebration-title">WORKOUT COMPLETED!</div>
+          <div class="celebration-desc">Outstanding discipline, champion. Today's session is locked in.</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ====================================================================
+         4 DISTINCT WORKOUT PHASE CONTAINERS
+         ==================================================================== -->
+    <main class="phases-container">
+      <!-- PHASE 1: WARMUP (Electric Cyan #06b6d4) -->
+      <section class="phase-card phase-1" aria-labelledby="phase-1-title">
+        <div class="phase-header">
+          <div class="phase-header-left">
+            <span class="phase-badge">Phase 1</span>
+            <h3 id="phase-1-title" class="phase-title">Warmup</h3>
+            <span id="phase-1-count" class="phase-counter">0 / 0</span>
+          </div>
+          <button class="phase-quick-add" data-phase="phase1" title="Add exercise to Phase 1">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+              <line x1="12" y1="5" x2="12" y2="19"></line>
+              <line x1="5" y1="12" x2="19" y2="12"></line>
+            </svg>
+          </button>
+        </div>
+        <div id="phase-1-list" class="exercise-list">
+          <!-- Populated by app.js -->
+        </div>
+      </section>
+
+      <!-- PHASE 2: MAIN WORKOUT (Amber Gold #f59e0b) -->
+      <section class="phase-card phase-2" aria-labelledby="phase-2-title">
+        <div class="phase-header">
+          <div class="phase-header-left">
+            <span class="phase-badge">Phase 2</span>
+            <h3 id="phase-2-title" class="phase-title">Main Workout</h3>
+            <span id="phase-2-count" class="phase-counter">0 / 0</span>
+          </div>
+          <button class="phase-quick-add" data-phase="phase2" title="Add exercise to Phase 2">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+              <line x1="12" y1="5" x2="12" y2="19"></line>
+              <line x1="5" y1="12" x2="19" y2="12"></line>
+            </svg>
+          </button>
+        </div>
+        <div id="phase-2-list" class="exercise-list">
+          <!-- Populated by app.js -->
+        </div>
+      </section>
+
+      <!-- PHASE 3: FINISHER (Fire Red #ef4444) -->
+      <section class="phase-card phase-3" aria-labelledby="phase-3-title">
+        <div class="phase-header">
+          <div class="phase-header-left">
+            <span class="phase-badge">Phase 3</span>
+            <h3 id="phase-3-title" class="phase-title">Finisher</h3>
+            <span id="phase-3-count" class="phase-counter">0 / 0</span>
+          </div>
+          <button class="phase-quick-add" data-phase="phase3" title="Add exercise to Phase 3">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+              <line x1="12" y1="5" x2="12" y2="19"></line>
+              <line x1="5" y1="12" x2="19" y2="12"></line>
+            </svg>
+          </button>
+        </div>
+        <div id="phase-3-list" class="exercise-list">
+          <!-- Populated by app.js -->
+        </div>
+      </section>
+
+      <!-- PHASE 4: RECOVERY (Emerald Green #10b981) -->
+      <section class="phase-card phase-4" aria-labelledby="phase-4-title">
+        <div class="phase-header">
+          <div class="phase-header-left">
+            <span class="phase-badge">Phase 4</span>
+            <h3 id="phase-4-title" class="phase-title">Recovery</h3>
+            <span id="phase-4-count" class="phase-counter">0 / 0</span>
+          </div>
+          <button class="phase-quick-add" data-phase="phase4" title="Add exercise to Phase 4">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+              <line x1="12" y1="5" x2="12" y2="19"></line>
+              <line x1="5" y1="12" x2="19" y2="12"></line>
+            </svg>
+          </button>
+        </div>
+        <div id="phase-4-list" class="exercise-list">
+          <!-- Populated by app.js -->
+        </div>
+      </section>
+    </main>
+
+    <!-- ====================================================================
+         FLOATING GYM REST TIMER BAR
+         ==================================================================== -->
+    <aside class="rest-timer-bar" aria-label="Gym Rest Timer">
+      <div class="timer-left">
+        <div id="timer-badge" class="timer-icon-badge" title="Rest Timer">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+            <circle cx="12" cy="12" r="10"></circle>
+            <polyline points="12 6 12 12 16 14"></polyline>
+          </svg>
+        </div>
+        <div class="timer-display-col">
+          <span id="timer-clock" class="timer-clock">1:00</span>
+          <span class="timer-sublabel">Rest Timer</span>
+        </div>
+      </div>
+
+      <div class="timer-presets">
+        <button class="preset-btn" data-sec="30">30s</button>
+        <button class="preset-btn" data-sec="60">60s</button>
+        <button class="preset-btn" data-sec="90">90s</button>
+        <button class="preset-btn" data-sec="120">2m</button>
+        <button class="preset-btn" data-sec="180">3m</button>
+      </div>
+
+      <div class="timer-controls">
+        <button id="timer-action-btn" class="timer-btn-action">Start</button>
+        <button id="timer-reset-btn" class="icon-btn" title="Reset Timer">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2">
+            <polyline points="23 4 23 10 17 10"></polyline>
+            <path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"></path>
+          </svg>
+        </button>
+      </div>
+    </aside>
+
+    <!-- ====================================================================
+         DYNAMIC ADD EXERCISE MODAL
+         ==================================================================== -->
+    <div id="add-modal" class="modal-overlay" role="dialog" aria-modal="true" aria-labelledby="modal-heading">
+      <div class="modal-card">
+        <div class="modal-header">
+          <h3 id="modal-heading" class="modal-title">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--phase2-main)" stroke-width="2.5">
+              <path d="M6 5v14M18 5v14M2 9v6M22 9v6M6 12h12"></path>
+            </svg>
+            Add Exercise
+          </h3>
+          <button id="modal-close" class="modal-close-btn" aria-label="Close modal">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+              <line x1="18" y1="6" x2="6" y2="18"></line>
+              <line x1="6" y1="6" x2="18" y2="18"></line>
+            </svg>
+          </button>
+        </div>
+
+        <form id="add-exercise-form" class="modal-form">
+          <div class="form-row-2">
+            <div class="form-group">
+              <label class="form-label" for="modal-day-select">Target Day</label>
+              <select id="modal-day-select" class="form-select" required>
+                <option value="mon">Monday - Push</option>
+                <option value="tue">Tuesday - Leg Day</option>
+                <option value="wed">Wednesday - Core/Cardio</option>
+                <option value="thu">Thursday - Pull Day</option>
+                <option value="fri">Friday - Arms/Delts</option>
+                <option value="sat">Saturday - Full Body</option>
+                <option value="sun">Sunday - Mobility</option>
+              </select>
+            </div>
+
+            <div class="form-group">
+              <label class="form-label" for="modal-phase-select">Workout Phase</label>
+              <select id="modal-phase-select" class="form-select" required>
+                <option value="phase1">Phase 1: Warmup</option>
+                <option value="phase2" selected>Phase 2: Main Workout</option>
+                <option value="phase3">Phase 3: Finisher</option>
+                <option value="phase4">Phase 4: Recovery</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label" for="modal-exercise-name">Exercise Name</label>
+            <input type="text" id="modal-exercise-name" class="form-input" placeholder="e.g. Bulgarian Split Squat" required />
+          </div>
+
+          <div class="form-row-2">
+            <div class="form-group">
+              <label class="form-label" for="modal-sets">Sets</label>
+              <input type="text" id="modal-sets" class="form-input" placeholder="e.g. 3 sets" required />
+            </div>
+
+            <div class="form-group">
+              <label class="form-label" for="modal-reps">Reps / Duration</label>
+              <input type="text" id="modal-reps" class="form-input" placeholder="e.g. 10-12 reps / leg" required />
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label" for="modal-cues">Target Cues & Coaching Notes</label>
+            <input type="text" id="modal-cues" class="form-input" placeholder="e.g. Slow negative, pause at bottom" />
+          </div>
+
+          <div class="modal-footer">
+            <button type="button" id="modal-cancel" class="btn-secondary">Cancel</button>
+            <button type="submit" class="btn-submit">Add to Workout</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <!-- Main JavaScript File -->
+  <script src="app.js"></script>
+</body>
+</html>
